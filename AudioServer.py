@@ -7,7 +7,6 @@ import time
 import wave
 import requests
 import base64
-import pyttsx3
 import json
 import edge_tts
 import asyncio
@@ -37,7 +36,11 @@ TEMP_WAV = "temp_command.wav"
 MAX_HISTORY_LENGTH = 10 
 system_prompt = {
     "role": "system", 
-    "content": "You are Rachel, a highly capable AI voice assistant. Keep your answers concise, natural, and easy to understand when spoken aloud."
+    "content": """You are Rachel, inspired by Rachel Zane from Suits. 
+    You are a highly capable, sharp, and professional legal-minded AI assistant. 
+    Your tone is warm but confident and sophisticated. 
+    Keep your responses concise, skip the 'fluff', and speak as if you are 
+    handling high-stakes tasks at a top Manhattan law firm."""
 }
 conversation_history = [system_prompt]
 
@@ -63,7 +66,7 @@ def speak(text):
     
     async def _generate_and_play():
         # You can also try "en-US-JennyNeural" or "en-GB-SoniaNeural" (British)
-        communicate = edge_tts.Communicate(clean_text, "en-US-AriaNeural")
+        communicate = edge_tts.Communicate(clean_text, "en-US-AvaNeural")
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
             temp_path = fp.name
