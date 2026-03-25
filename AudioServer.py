@@ -1,3 +1,4 @@
+from random import random
 import re
 import socket
 import pvporcupine
@@ -102,7 +103,7 @@ def route_intent(prompt_text):
     Analyze the following user command and determine two things:
     1. The appropriate model to handle it:
        - "vision" if the user wants you to look at, identify, or read something in the real world.
-       - "reasoning" for complex logic, math, coding, or deep analytical thinking.
+       - "reasoning" for complex logic, complex math, coding, or deep analytical thinking.
        - "light" for general conversation, follow-up questions, simple questions, or basic tasks.
     2. Whether it requires searching the web for up-to-date, real-time, or factual information (true/false).
     
@@ -257,12 +258,21 @@ try:
 
                 try:
                     print(f"Sending Request to {model_to_use}...")
+
+                    modelMaxTokensBase = 150
+
+                    if model_to_use == "openai/gpt-oss-120b":
+                        modelMaxTokensBase = 300
+                    if model_to_use == "moonshotai/kimi-k2-instruct-0905":
+                        modelMaxTokensBase = 150
                     
+                    # Switch back if this causes errs 
                     chat_completion = groq_client.chat.completions.create(
                         messages=conversation_history,
                         model=model_to_use,
-                        max_tokens=150
+                        max_tokens=modelMaxTokensBase
                     )
+
                     ai_response = chat_completion.choices[0].message.content
                     speak(ai_response)
                     
@@ -290,7 +300,9 @@ try:
 
                 if handle.process(pcm) >= 0:
                     print("\nWake Word Detected -> Listening for command...")
-                    speak("Yes?")
+                    # Change back to single input if this causes issues 
+                    possible_wake_responses = ["Yes?", "How can I assist?", "I'm listening.", "What can I do for you?", "At your service."]
+                    speak(possible_wake_responses[random.randint(0, len(possible_wake_responses) - 1)])
                     is_recording_command = True
                     record_start_time = time.time()
                     command_frames = []
