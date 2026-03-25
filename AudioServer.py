@@ -199,7 +199,7 @@ try:
 
                 if model_type == "vision":
                     print("Fetching camera snapshot...")
-                    rachel_camera_responses = ["Let me take a look at that.", "Checking the camera for you.", "Here's what I see.", "Analyzing the camera feed now.", "Looking through the camera..."]
+                    rachel_camera_responses = ["Let me take a look at that.", "Checking the camera for you.", "Here's what I see.", "Analyzing the camera feed now.", "Looking through the camera"]
                     random_response = rachel_camera_responses[int(time.time()) % len(rachel_camera_responses)]
                     speak(random_response)
                     try:
