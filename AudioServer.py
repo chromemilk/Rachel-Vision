@@ -1,3 +1,4 @@
+import re
 import socket
 import pvporcupine
 import struct
@@ -8,6 +9,10 @@ import requests
 import base64
 import pyttsx3
 import json
+import edge_tts
+import asyncio
+import pygame
+import tempfile
 from groq import Groq
 from tavily import TavilyClient
 from dotenv import load_dotenv
@@ -23,6 +28,8 @@ TAVILY_API_KEY = os.getenv("TAVILY_API")
 # Change this to the IP of the ESP32 camera module
 ESP32_CAM_URL = "http://172.20.10.4/capture" 
 
+pygame.mixer.init()
+
 UDP_PORT = 8002
 COMMAND_RECORD_TIME = 4.0 
 TEMP_WAV = "temp_command.wav"
@@ -34,7 +41,6 @@ system_prompt = {
 }
 conversation_history = [system_prompt]
 
-engine = pyttsx3.init()
 groq_client = Groq(api_key=GROQ_API_KEY)
 tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
@@ -49,8 +55,34 @@ sock.settimeout(1.0)
 
 def speak(text):
     print(f"Rachel: {text}")
-    engine.say(text)
-    engine.runAndWait()
+    
+    clean_text = text.replace("’", "'").replace("‘", "'")
+    clean_text = clean_text.replace("—", "-").replace("–", "-")
+    clean_text = clean_text.replace('"', "")
+    clean_text = re.sub(r'[*_~#`]', '', clean_text)
+    
+    async def _generate_and_play():
+        # You can also try "en-US-JennyNeural" or "en-GB-SoniaNeural" (British)
+        communicate = edge_tts.Communicate(clean_text, "en-US-AriaNeural")
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+            temp_path = fp.name
+            
+        await communicate.save(temp_path)
+        
+        pygame.mixer.music.load(temp_path)
+        pygame.mixer.music.play()
+        
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+            
+        pygame.mixer.music.unload()
+        os.remove(temp_path)
+
+    try:
+        asyncio.run(_generate_and_play())
+    except Exception as e:
+        print(f"Edge TTS Error: {e}")
 
 def drain_udp_buffer():
     sock.setblocking(False)
@@ -249,8 +281,7 @@ try:
 
                 if handle.process(pcm) >= 0:
                     print("\nWake Word Detected -> Listening for command...")
-                    engine.say("Yes?") 
-                    engine.runAndWait()
+                    speak("Yes?")
                     is_recording_command = True
                     record_start_time = time.time()
                     command_frames = []
