@@ -189,6 +189,9 @@ try:
                 web_context = ""
                 if use_web:
                     print("Fetching web data...")
+                    rachel_search_responses = ["Sure, let me look that up for you.", "One moment while I find that information.", "I'll check the latest info on that.", "Let me see what I can find about that.", "Searching for the most recent details on that."]
+                    random_response = rachel_search_responses[int(time.time()) % len(rachel_search_responses)]
+                    speak(random_response)
                     web_context = fetch_web_context(user_prompt)
 
                 final_prompt = f"{command_text}\n{web_context}" if web_context else command_text
@@ -196,6 +199,9 @@ try:
 
                 if model_type == "vision":
                     print("Fetching camera snapshot...")
+                    rachel_camera_responses = ["Let me take a look at that.", "Checking the camera for you.", "Here's what I see.", "Analyzing the camera feed now.", "Looking through the camera..."]
+                    random_response = rachel_camera_responses[int(time.time()) % len(rachel_camera_responses)]
+                    speak(random_response)
                     try:
                         cam_response = requests.get(ESP32_CAM_URL, timeout=5)
                         if cam_response.status_code == 200:
